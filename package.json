@@ -8,6 +8,9 @@
   },
   "devDependencies": {
     "@sveltejs/kit": "next",
+    "@urql/svelte": "^1.2.2",
+    "graphql": "^15.5.0",
+    "nhost-js-sdk": "^3.1.0",
     "svelte": "^3.34.0"
   },
   "type": "module",

@@ -1,43 +1,72 @@
 <script context="module">
-	export const prerender = true;
+  export const prerender = true;
 </script>
 
 <script>
-	import Item from '$lib/Feed/Item.svelte'
-	import {requests} from '$lib/stores/requests'
+  import Item from "$lib/Feed/Item.svelte";
+
+  import { operationStore, query } from "@urql/svelte";
+
+  const requests = operationStore(`
+		query {
+			requests {
+				id
+				kind
+				reason
+				status
+				title
+				due_date
+				description
+				created
+				parcel_id
+			}
+		}
+	`);
+
+  query(requests);
 </script>
 
 <svelte:head>
-	<title>Home</title>
+  <title>Home</title>
 </svelte:head>
 
 <section>
-<h1>Recent Activity</h1>
+  <h1>Recent Activity</h1>
 
-<div class="feed">
-	{#each $requests as r}
-		<Item id={r.id} kind={r.kind} description={r.description} parcel={r.parcel_id}/>
-	{/each}
-</div>
-
+  <div class="feed">
+    {#if $requests.fetching}
+      <p>loading</p>
+    {:else if $requests.error}
+      <p>Oh no... {$requests.error.message}</p>
+    {:else}
+      {#each $requests.data.requests as r}
+        <Item
+          id={r.id}
+          kind={r.kind}
+          description={r.reason}
+          parcel={r.parcel_id}
+        />
+      {/each}
+    {/if}
+  </div>
 </section>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		flex: 1;
-	}
+  section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
 
-	h1 {
-		width: 100%;
-	}
+  h1 {
+    width: 100%;
+  }
 
-	.feed {
-		flex: 1;
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-	}
+  .feed {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 </style>

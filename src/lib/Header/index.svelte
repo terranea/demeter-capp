@@ -1,4 +1,9 @@
 <script>
+  import {auth} from "$lib/auth"
+
+  function logout() {
+    auth.logout()
+  }
 </script>
 
 <header>
@@ -28,6 +33,7 @@
       /><line x1="3" y1="18" x2="21" y2="18" /></svg
     >
   </div>
+  <button on:click="{logout}">👋</button>
 </header>
 
 <style>

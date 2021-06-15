@@ -1,12 +1,27 @@
 <script context="module">
-	export const prerender = true;
+  export const prerender = true;
 </script>
 
 <script>
-	import {requests} from '$lib/stores/requests'
-	console.log($requests)
+  import { operationStore, query } from "@urql/svelte";
+
+  const parcels = operationStore(`
+		query {
+			parcels {
+				id
+				name
+				description
+				created
+				area
+				geog
+  		}
+		}
+	`);
+
+  query(parcels);
+  $: console.log(parcels);
 </script>
 
 <svelte:head>
-	<title>Parcels</title>
+  <title>Parcels</title>
 </svelte:head>

@@ -11,3 +11,16 @@ const fetchRequests = async () => {
 }
 
 fetchRequests();
+
+import { operationStore, query } from '@urql/svelte';
+
+const todos = operationStore(`
+  query {
+    todos {
+      id
+      title
+    }
+  }
+`);
+
+query(todos);
