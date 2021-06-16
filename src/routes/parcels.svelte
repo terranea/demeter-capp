@@ -1,5 +1,4 @@
 <script context="module">
-  export const prerender = true;
 </script>
 
 <script>
@@ -15,8 +14,10 @@
 				area
 				geog
   		}
-		}
-	`);
+		}`,
+		{},
+    { requestPolicy: 'cache-and-network' }
+		);
 
   query(parcels);
   $: console.log(parcels);
@@ -25,3 +26,19 @@
 <svelte:head>
   <title>Parcels</title>
 </svelte:head>
+
+<section>
+  <h1>Your Parcels</h1>
+
+  <div class="feed">
+    {#if $parcels.fetching}
+      <p>loading</p>
+    {:else if $parcels.error}
+      <p>Oh no... {$parcels.error.message}</p>
+    {:else}
+      {#each $parcels.data.parcels as p}
+				<h2>{p.name}</h2>
+      {/each}
+    {/if}
+  </div>
+</section>

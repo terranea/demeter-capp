@@ -1,12 +1,10 @@
 <script context="module">
-  export const prerender = true;
 </script>
 
 <script>
   import Item from "$lib/Feed/Item.svelte";
 
   import { operationStore, query } from "@urql/svelte";
-
   const requests = operationStore(`
 		query {
 			requests {
@@ -15,13 +13,12 @@
 				reason
 				status
 				title
-				due_date
-				description
-				created
 				parcel_id
 			}
-		}
-	`);
+		}`,
+    {},
+    { requestPolicy: 'cache-and-network' }
+    );
 
   query(requests);
 </script>

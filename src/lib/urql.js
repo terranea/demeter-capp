@@ -1,5 +1,5 @@
 import { auth } from "$lib/auth"
-import { createClient, dedupExchange, cacheExchange, fetchExchange, ssrExchange } from '@urql/svelte';
+import { createClient, defaultExchanges, subscriptionExchange } from '@urql/svelte';
 
 const getToken = (auth) => {
   if (auth) {
@@ -7,22 +7,12 @@ const getToken = (auth) => {
       return auth.getJWTToken()
     }
   }
-
+  
   return null;
 };
 
-console.log("CREATE GRAPHCLIENT")
-
-const isServerSide = typeof window === 'undefined';
-
-// The `ssrExchange` must be initialized with `isClient` and `initialState`
-const ssr = ssrExchange({
-  isClient: !isServerSide,
-  initialState: !isServerSide ? window.__URQL_DATA__ : undefined,
-});
-
 const client = createClient({
-  url: 'http://localhost:8080/v1/graphql',
+  url: 'http://192.168.178.21:8080/v1/graphql',
   fetchOptions: () => {
     const token = getToken(auth);
     return {

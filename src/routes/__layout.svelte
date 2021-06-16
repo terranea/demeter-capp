@@ -11,10 +11,9 @@
 
   let isLoading = true;
   let isAuthenticated = false;
-	setClient(client)
-
+  
+  setClient(client)
   onMount(async () => {
-    console.log("ONMOUNt");
     const isa = await auth.isAuthenticatedAsync();
     isLoading = false;
     isa ? (isAuthenticated = true) : (isAuthenticated = false);

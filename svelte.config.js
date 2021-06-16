@@ -5,7 +5,7 @@ const config = {
 		target: '#svelte',
 		vite: {
 			optimizeDeps: {
-				exclude: ['@urql/svelte'],
+				exclude: ['@urql/svelte', 'subscriptions-transport-ws'],
 			}
 		}
 	}

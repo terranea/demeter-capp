@@ -5,8 +5,6 @@
 
   let email = "";
   let password = "";
-  let isLoading = false;
-  let btn = "";
 
   let errors = {};
 
