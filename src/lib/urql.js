@@ -12,7 +12,7 @@ const getToken = (auth) => {
 };
 
 const client = createClient({
-  url: 'http://192.168.178.21:8080/v1/graphql',
+  url: 'https://capp.terranea.de/v1/graphql',
   fetchOptions: () => {
     const token = getToken(auth);
     return {

@@ -1,5 +1,5 @@
 {
-  "name": "~TODO~",
+  "name": "Demeter-CAPP",
   "version": "0.0.1",
   "scripts": {
     "dev": "svelte-kit dev --host",
@@ -7,6 +7,7 @@
     "preview": "svelte-kit preview"
   },
   "devDependencies": {
+    "@sveltejs/adapter-vercel": "^1.0.0-next.0",
     "@sveltejs/kit": "next",
     "@urql/svelte": "^1.2.2",
     "graphql": "^15.5.0",

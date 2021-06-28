@@ -22,10 +22,10 @@
 <form on:submit|preventDefault={submit}>
     <h1>👤</h1>
 
-    <label>Email</label>
+    <label for="email">Email</label>
     <input name="email" placeholder="name@example.com" bind:value={email} />
 
-    <label>Password</label>
+    <label for="password">Password</label>
     <input name="password" type="password" bind:value={password} />
 
     <button type="submit">

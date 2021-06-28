@@ -9,7 +9,6 @@
 		query {
 			requests {
 				id
-				kind
 				reason
 				status
 				title
@@ -21,6 +20,7 @@
     );
 
   query(requests);
+  $: console.log($requests)
 </script>
 
 <svelte:head>
