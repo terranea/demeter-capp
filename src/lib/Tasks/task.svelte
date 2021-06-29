@@ -1,6 +1,8 @@
 <script>
   import { storage } from "$lib/auth";
   import { onMount } from "svelte";
+  import Modal from "$lib/Modal.svelte";
+
   export let data;
   export let index;
   let canvas;
@@ -10,19 +12,9 @@
   let file;
   let exif;
   let constraints = { audio: false, video: true };
-  let locationWatcher;
-  let locationError;
-  let coordinates;
-
-  $: console.log(locationError)
-  $: console.log(coordinates)
 
   onMount(async () => {
-    supported = "mediaDevices" in navigator;
-    getLocation();
-    return () => {
-      if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
-    };
+
   });
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   function photo() {
@@ -70,68 +62,43 @@
     });
   }
 
-  function getLocation(e) {
-    if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
-    if (navigator.geolocation) {
-      const onSuccess = (position) => {
-        locationError = null;
-        coordinates = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          altitude: position.coords.altitude,
-          accuracy: position.coords.accuracy,
-          heading: position.coords.heading,
-        };
-      };
-      const onError = (error) => {
-        switch (error.code) {
-          case 0:
-            locationError = "Geolocation Error: unknown error";
-            break;
-          case 1:
-            locationError = "Geolocation Error: permission denied";
-            break;
-          case 2:
-            locationError = "Geolocation Error: position unavailable";
-            break;
-          case 3:
-            locationError = "Geolocation Error: timed out";
-            break;
-        }
-      };
-      const options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      };
-      locationWatcher = navigator.geolocation.watchPosition(
-        onSuccess,
-        onError,
-        options
-      );
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
+
+
+  function submit(close) {
+    close();
   }
 </script>
 
-<p>Supported: {supported}</p>
 <div class="task">
   <h2>{index}. Photo Request</h2>
   <p>{data.description}</p>
-  <button on:click={readExif}>Exif</button>
-  <input
-    type="file"
-    accept="image/*"
-    on:change={upload}
-    bind:this={fileInput}
-  />
-  <button class="btn-pic" on:click={() => fileInput.click()}>
-    Take Picture
-  </button>
-  {#if coordinates}
-  <p>{coordinates.latitude} {coordinates.longitude} {coordinates.heading}</p>
-  {/if}
+  <!-- <button on:click={readExif}>Exif</button> -->
+  <Modal>
+    <div slot="trigger" let:open>
+      <button class="open" on:click={open}>Take Picture</button>
+    </div>
+    <div slot="header">
+      <h2>Please move to the coordinates on the map to take a picture</h2>
+    </div>
+    <div class="content" slot="content">
+      <input
+        type="file"
+        accept="image/*"
+        on:change={upload}
+        bind:this={fileInput}
+      />
+      <button class="take" on:click={() => fileInput.click()}>
+        Take Picture
+      </button>
+    </div>
+
+    <div slot="footer" let:store={{ close }}>
+      <div class="fbtn">
+        <button on:click={close}>Close</button>
+        <button class="sub" on:click={submit(close)}>Submit</button>
+      </div>
+    </div>
+  </Modal>
 </div>
 
 {#if exif}
@@ -152,26 +119,49 @@
     border-radius: 8px;
   }
 
+  .content {
+    display: flex;
+    flex-direction: column;
+  }
+
   button {
-    margin: 0 auto;
-    margin-top: 1rem;
-    padding: 0.7rem 1rem;
-    max-width: 300px;
+    margin: 0;
     display: inline-block;
-    border: 0.1em solid #ffffff;
-    border-radius: 0.12em;
-    box-sizing: border-box;
-    text-decoration: none;
-    font-weight: 600;
-    color: #000000;
-    text-align: center;
-    transition: all 0.2s;
-    background-color: rgb(202, 202, 202);
+    outline: 0;
+    border: none;
     cursor: pointer;
+    font-weight: 600;
+    border-radius: 4px;
+    font-size: 13px;
+    min-height: 30px;
+    background-color: #0000000d;
+    color: #0e0e10;
+    padding: 0 1rem;
   }
 
   button:hover {
-    background-color: #e9e9e9;
+    background-color: #0000001a;
+  }
+
+  button.open {
+    margin-top: 1rem;
+  }
+
+  button.take {
+    margin: 0 auto;
+    padding: .6rem 1rem;
+    margin-top: 1rem;
+  }
+
+  .fbtn {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  button.sub {
+    background-color: var(--primary-color);
   }
 
   input {
