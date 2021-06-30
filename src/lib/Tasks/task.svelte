@@ -142,7 +142,7 @@
 
       <div class="preview">
         {#if supported}
-        <video id="player" bind:this={player} autoplay controls=""/>
+        <video id="player" bind:this={player} autoplay webkit-playsinline/>
         {:else}
         {#if imageSrc}
           <img id="blah" src={imageSrc} alt="your image" />
