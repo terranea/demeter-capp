@@ -34,7 +34,7 @@
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   async function openModal(open) {
     open()
-    const constraints = { audio: false, video: true }
+    const constraints = { audio: false, video: { facingMode: "environment" } }
 
     try {
       stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -142,7 +142,7 @@
 
       <div class="preview">
         {#if supported}
-        <video id="player" bind:this={player} autoplay />
+        <video id="player" bind:this={player} autoplay controls=""/>
         {:else}
         {#if imageSrc}
           <img id="blah" src={imageSrc} alt="your image" />
