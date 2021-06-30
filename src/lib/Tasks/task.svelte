@@ -9,14 +9,14 @@
   export let parcel;
   let canvas;
   let player;
+  let stream;
   let fileInput;
   let supported;
   let file;
   let exif;
   let comment;
-  let imageSrc=""
-  let user = auth.getClaim("x-hasura-user-id")
-  let constraints = { audio: false, video: true };
+  let imageSrc = "";
+  let user = auth.getClaim("x-hasura-user-id");
 
   const mutatePhoto = mutation({
     query: `
@@ -29,23 +29,27 @@
   });
 
   onMount(async () => {
- 
+    supported = "mediaDevices" in navigator;
   });
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
-  function photo() {
-    console.log("TAKE PHOTO");
-    supported = "mediaDevices" in navigator;
-    // console.log(supported)
-    // navigator.mediaDevices.getUserMedia(constraints)
-    // .then((stream) => {
-    //   player.srcObject = stream;
-    // });
+  async function openModal(open) {
+    open()
+    const constraints = { audio: false, video: true }
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      player.srcObject = stream;
+      /* use the stream */
+    } catch (err) {
+      console.log(error);
+      /* handle the error */
+    }
   }
 
   async function loadPic(e) {
     console.log(e.target.files);
     file = e.target.files[0];
-    imageSrc = URL.createObjectURL(file)
+    imageSrc = URL.createObjectURL(file);
   }
 
   function readExif() {
@@ -58,22 +62,27 @@
     });
   }
 
-
-
   async function submit(close) {
     if (file) {
       try {
-        const e = await storage.put("/user/"+user+"/"+file.name, file)
-        const m = await mutatePhoto({ "location": "bla", "user_id": user, "request_task_id": data.id, "parcel_id": parcel, "token": e.Metadata.token, "uri": "https://cappb.terranea.de/storage/o/"+e.key, "comment": comment });
+        const e = await storage.put("/user/" + user + "/" + file.name, file);
+        const m = await mutatePhoto({
+          location: "bla",
+          user_id: user,
+          request_task_id: data.id,
+          parcel_id: parcel,
+          token: e.Metadata.token,
+          uri: "https://cappb.terranea.de/storage/o/" + e.key,
+          comment: comment,
+        });
         if (m.data) {
-          console.log("UPLOAD SUCCESSFUL")
+          console.log("UPLOAD SUCCESSFUL");
         }
         if (m.error) {
-          console.log(m.error)
+          console.log(m.error);
         }
-
       } catch (error) {
-        console.log(error)
+        console.log(error);
       }
     }
     close();
@@ -86,7 +95,21 @@
   <!-- <button on:click={readExif}>Exif</button> -->
   <Modal>
     <div slot="trigger" let:open>
-      <button class="open" on:click={open}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg> Resolve</button>
+      <button class="open" on:click={openModal(open)}
+        ><svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="feather feather-check"
+          ><polyline points="20 6 9 17 4 12" /></svg
+        > Resolve</button
+      >
     </div>
     <div slot="header">
       <h2>Please move to the coordinates on the map to take a picture</h2>
@@ -100,16 +123,34 @@
         id="fileinput"
       />
       <button class="take" on:click={() => fileInput.click()}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Take Picture
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="feather feather-camera"
+          ><path
+            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+          /><circle cx="12" cy="13" r="4" /></svg
+        > Take Picture
       </button>
 
       <div class="preview">
+        {#if supported}
+        <video id="player" bind:this={player} autoplay />
+        {:else}
         {#if imageSrc}
-          <img id="blah" src="{imageSrc}" alt="your image" />
+          <img id="blah" src={imageSrc} alt="your image" />
+        {/if}
         {/if}
       </div>
 
-      <input type="text" placeholder="comment" bind:value={comment}>
+      <input type="text" placeholder="comment" bind:value={comment} />
     </div>
 
     <div slot="footer" let:store={{ close }}>
@@ -131,7 +172,7 @@
 
 <style>
   .task {
-    margin-bottom: .7rem;
+    margin-bottom: 0.7rem;
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
@@ -156,8 +197,13 @@
     margin: 1rem 0;
   }
 
+  video {
+    min-height: 0;
+    flex: 1;
+    width: 100%;
+  }
+
   img {
-    display:block;
     height: 200px;
     flex: 1;
     min-height: 0;
@@ -179,7 +225,7 @@
     min-height: 30px;
     background-color: #0000000d;
     color: #0e0e10;
-    padding: 0 .6rem;
+    padding: 0 0.6rem;
   }
 
   button:hover {
@@ -187,7 +233,7 @@
   }
 
   button svg {
-    margin-right: .5rem;
+    margin-right: 0.5rem;
   }
 
   button.open {
@@ -198,7 +244,7 @@
 
   button.take {
     margin: 0 auto;
-    padding: .6rem 1rem;
+    padding: 0.6rem 1rem;
     margin-top: 1rem;
   }
 
