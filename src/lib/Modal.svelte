@@ -105,6 +105,7 @@
     z-index: 10;
     width: 90vw;
     height: 90%;
+    max-height: 90%;
     border-radius: 0.3rem;
     background-color: white;
     overflow: hidden;
@@ -119,7 +120,10 @@
   } */
   div.content {
     flex: 1;
-    overflow: auto;
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
   h1 {
     opacity: 0.5;

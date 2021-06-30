@@ -9,13 +9,13 @@
   $: title = kind == "photo" ? "Image Request" : "Request";
 </script>
 
+<a href={`/requests/${id}`}>
 <div class="item">
-  <a href={`/requests/${id}`}>
     <h2>{title}</h2>
     <p>{description}</p>
     <div class="parcel">Parcel: {parcel}</div>
-  </a>
-</div>
+  </div>
+</a>
 
 <style>
   .item {

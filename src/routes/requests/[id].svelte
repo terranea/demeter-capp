@@ -13,14 +13,15 @@
   import { operationStore, query } from "@urql/svelte";
   import Task from "$lib/Tasks/task.svelte";
   import maplibregl from "maplibre-gl";
+  import bbox from "@turf/bbox";
   export let id;
   let map;
   let locationWatcher;
   let locationError;
   let userLocation = {
-        "type": "Point",
-        "coordinates": []
-      }
+    type: "Point",
+    coordinates: [],
+  };
 
   let coordinates;
   const request = operationStore(
@@ -66,21 +67,54 @@
         },
       };
 
+  $: if (!$request.fetching) {
+    console.log("BASLDFAJD");
+    if (map && map.getSource("tasklocations")) {
+      const data = taskLocs();
+
+      console.log(data);
+      map.getSource("tasklocations").setData(data);
+    }
+  }
+
+  function taskLocs() {
+    if ($request.fetching) return undefined;
+    let features = [];
+    $request.data.requests_by_pk.photo_request_tasks.forEach((e) => {
+      const f = {
+        type: "Feature",
+        properties: {},
+        geometry: e.location,
+      };
+      features.push(f);
+    });
+    let fc = {
+      type: "FeatureCollection",
+      features: features,
+    };
+    console.log(fc);
+
+    map.getSource("tasklocations").setData(fc);
+  }
+
   $: if (!$request.fetching && map) {
-    let ctr = $request.data.requests_by_pk.parcel.geom.coordinates[0][0];
-    map.jumpTo({ center: ctr, zoom: 5 });
+    let ctr = $request.data.requests_by_pk.parcel.geom;
+    map.fitBounds(bbox(ctr), {
+      padding: { top: 40, bottom: 40, left: 20, right: 20 },
+    });
+    // map.jumpTo({ center: ctr, zoom: 14});
   }
 
   $: if (!$request.fetching && map && map.getSource("userlocation")) {
-    map.getSource("userlocation").setData(userLocation)
+    map.getSource("userlocation").setData(userLocation);
   }
-
 
   $: console.log(parcel);
   onMount(async () => {
     map = new maplibregl.Map({
       container: "map", // container id
-      style: "https://demotiles.maplibre.org/style.json", // style URL
+      style:
+        "https://api.maptiler.com/maps/hybrid/style.json?key=Ln1qLDqR5RvwLteNdPJ0", // style URL
       center: [0, 0], // starting position [lng, lat]
       zoom: 1, // starting zoom
       dragRotate: false,
@@ -96,26 +130,45 @@
         data: userLocation,
       });
 
-      map.addLayer({
-        id: "parcel",
-        type: "fill",
-        source: "parcel",
-        layout: {},
-        paint: {
-          "fill-color": "#088",
-          "fill-opacity": 0.8,
+      map.addSource("tasklocations", {
+        type: "geojson",
+        data: {
+          type: "Point",
+          coordinates: [],
         },
       });
 
       map.addLayer({
-      'id': 'userlocation',
-      'source': 'userlocation',
-      'type': 'circle',
-      'paint': {
-      'circle-radius': 5,
-      'circle-color': '#007cbf'
-      }
+        id: "parcel",
+        type: "line",
+        source: "parcel",
+        layout: {},
+        paint: {
+          "line-color": "#fed976",
+          "line-width": 3,
+        },
       });
+
+      map.addLayer({
+        id: "userlocation",
+        source: "userlocation",
+        type: "circle",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "#007cbf",
+        },
+      });
+
+      map.addLayer({
+        id: "tasklocations",
+        source: "tasklocations",
+        type: "circle",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "#ff0000",
+        },
+      });
+      taskLocs();
     });
     getLocation();
     return () => {
@@ -148,12 +201,9 @@
           heading: position.coords.heading,
         };
         userLocation = {
-        "type": "Point",
-        "coordinates": [
-          position.coords.longitude,
-          position.coords.latitude
-        ]
-      }
+          type: "Point",
+          coordinates: [position.coords.longitude, position.coords.latitude],
+        };
       };
       const onError = (error) => {
         switch (error.code) {
@@ -189,29 +239,31 @@
 
 <svelte:head>
   <title>Home</title>
+  <link
+    href="https://unpkg.com/maplibre-gl@1.14.0-rc.1/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
 </svelte:head>
 
+<div class="header">
+  {#if $request.fetching}
+    <p>loading</p>
+  {:else if $request.error}
+    <p>Oh no... {$request.error.message}</p>
+  {:else}
+    <h1>{$request.data.requests_by_pk.title}</h1>
+    <h2>for {$request.data.requests_by_pk.parcel.name}</h2>
+  {/if}
+</div>
+
+<div id="map" />
+
 <section>
-  <div class="header">
-    {#if $request.fetching}
-      <p>loading</p>
-    {:else if $request.error}
-      <p>Oh no... {$request.error.message}</p>
-    {:else}
-      <h1>{$request.data.requests_by_pk.title}</h1>
-      <h2>for {$request.data.requests_by_pk.parcel.name}</h2>
-    {/if}
-  </div>
-
-  <div id="map" />
-
   {#if !$request.fetching}
-    <div class="tasks">
-      <h1>Tasks:</h1>
-      {#each $request.data.requests_by_pk.photo_request_tasks as t, i}
-        <Task data={t} index={i + 1} />
-      {/each}
-    </div>
+    <h1>Tasks:</h1>
+    {#each $request.data.requests_by_pk.photo_request_tasks as t, i}
+      <Task data={t} index={i + 1} parcel={$request.data.requests_by_pk.parcel_id} />
+    {/each}
   {/if}
 </section>
 
@@ -223,15 +275,21 @@
     padding-bottom: 1rem;
   }
 
-  .tasks{
+  section {
     margin-top: 1.4rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  section h1 {
+    margin-bottom: 0.4rem;
   }
 
   #map {
     height: 200px;
+    min-height: 200px;
     width: 100%;
   }
 
@@ -241,9 +299,5 @@
 
   h2 {
     margin: 0;
-  }
-
-  h3 {
-    margin-bottom: 0.2rem;
   }
 </style>

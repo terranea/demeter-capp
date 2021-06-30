@@ -9,7 +9,9 @@
   "devDependencies": {
     "@sveltejs/adapter-vercel": "^1.0.0-next.22",
     "@sveltejs/kit": "next",
+    "@turf/bbox": "^6.4.0",
     "@urql/svelte": "^1.2.3",
+    "geojson2svg": "^1.2.6",
     "graphql": "^15.5.1",
     "maplibre-gl": "^1.14.1-rc.2",
     "nhost-js-sdk": "^3.1.0",

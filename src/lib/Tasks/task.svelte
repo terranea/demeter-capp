@@ -1,20 +1,35 @@
 <script>
-  import { storage } from "$lib/auth";
+  import { auth, storage } from "$lib/auth";
   import { onMount } from "svelte";
   import Modal from "$lib/Modal.svelte";
+  import { mutation } from "@urql/svelte";
 
   export let data;
   export let index;
+  export let parcel;
   let canvas;
   let player;
   let fileInput;
   let supported;
   let file;
   let exif;
+  let comment;
+  let imageSrc=""
+  let user = auth.getClaim("x-hasura-user-id")
   let constraints = { audio: false, video: true };
 
-  onMount(async () => {
+  const mutatePhoto = mutation({
+    query: `
+    mutation Photo($location: String = "", $uri: String = "", $token: String = "", $user_id: uuid!, $request_task_id: uuid!, $parcel_id: uuid!, $comment: String = "") {
+      insert_geotagged_photo(objects: {location: $location, uri: $uri, token: $token, user_id: $user_id, request_task_id: $request_task_id, parcel_id: $parcel_id, comment: $comment}) {
+        affected_rows
+      }
+    }
+    `,
+  });
 
+  onMount(async () => {
+ 
   });
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   function photo() {
@@ -27,29 +42,10 @@
     // });
   }
 
-  async function getFiles() {
-    try {
-      const m = await storage.getMetadata("/public/");
-      console.log(m);
-    } catch (error) {}
-  }
-
-  async function upload(e) {
+  async function loadPic(e) {
     console.log(e.target.files);
-    let f = e.target.files[0];
     file = e.target.files[0];
-    exif = file.exifdata;
-
-    // if (f) {
-    //   try {
-    //     console.log("awiat")
-    //     const e = await storage.put("/public/"+f.name, f)
-    //     console.log(e)
-
-    //   } catch (error) {
-    //     console.log(error)
-    //   }
-    // }
+    imageSrc = URL.createObjectURL(file)
   }
 
   function readExif() {
@@ -64,7 +60,22 @@
 
 
 
-  function submit(close) {
+  async function submit(close) {
+    if (file) {
+      try {
+        const e = await storage.put("/user/"+user+"/"+file.name, file)
+        const m = await mutatePhoto({ "location": "bla", "user_id": user, "request_task_id": data.id, "parcel_id": parcel, "token": e.Metadata.token, "uri": "https://cappb.terranea.de/storage/o/"+e.key, "comment": comment });
+        if (m.data) {
+          console.log("UPLOAD SUCCESSFUL")
+        }
+        if (m.error) {
+          console.log(m.error)
+        }
+
+      } catch (error) {
+        console.log(error)
+      }
+    }
     close();
   }
 </script>
@@ -75,7 +86,7 @@
   <!-- <button on:click={readExif}>Exif</button> -->
   <Modal>
     <div slot="trigger" let:open>
-      <button class="open" on:click={open}>Take Picture</button>
+      <button class="open" on:click={open}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg> Resolve</button>
     </div>
     <div slot="header">
       <h2>Please move to the coordinates on the map to take a picture</h2>
@@ -84,12 +95,21 @@
       <input
         type="file"
         accept="image/*"
-        on:change={upload}
+        on:change={loadPic}
         bind:this={fileInput}
+        id="fileinput"
       />
       <button class="take" on:click={() => fileInput.click()}>
-        Take Picture
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-camera"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Take Picture
       </button>
+
+      <div class="preview">
+        {#if imageSrc}
+          <img id="blah" src="{imageSrc}" alt="your image" />
+        {/if}
+      </div>
+
+      <input type="text" placeholder="comment" bind:value={comment}>
     </div>
 
     <div slot="footer" let:store={{ close }}>
@@ -111,22 +131,45 @@
 
 <style>
   .task {
-    margin-top: 1rem;
+    margin-bottom: .7rem;
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
     padding: 1rem;
     border-radius: 8px;
+    position: relative;
   }
 
   .content {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 1rem 0;
+  }
+
+  img {
+    display:block;
+    height: 200px;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    object-fit: cover;
   }
 
   button {
     margin: 0;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     outline: 0;
     border: none;
     cursor: pointer;
@@ -136,15 +179,21 @@
     min-height: 30px;
     background-color: #0000000d;
     color: #0e0e10;
-    padding: 0 1rem;
+    padding: 0 .6rem;
   }
 
   button:hover {
     background-color: #0000001a;
   }
 
+  button svg {
+    margin-right: .5rem;
+  }
+
   button.open {
-    margin-top: 1rem;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
   }
 
   button.take {
@@ -164,7 +213,7 @@
     background-color: var(--primary-color);
   }
 
-  input {
+  #fileinput {
     display: none;
   }
 </style>

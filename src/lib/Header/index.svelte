@@ -14,7 +14,7 @@
     <h2>Welcome</h2>
   </div>
   <div class="settings">
-    <svg
+    <!-- <svg
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
@@ -31,15 +31,14 @@
         x2="21"
         y2="6"
       /><line x1="3" y1="18" x2="21" y2="18" /></svg
-    >
+    > -->
+    <button on:click="{logout}">👋</button>
   </div>
-  <button on:click="{logout}">👋</button>
 </header>
 
 <style>
   header {
     display: flex;
-    justify-content: center;
     background: var(--primary-color);
     align-items: center;
     padding: 0 1rem;
@@ -51,6 +50,25 @@
     height: 100%;
     display: flex;
     align-items: center;
+  }
+
+  button {
+    margin: 0;
+    display: inline-block;
+    outline: 0;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 4px;
+    font-size: 13px;
+    min-height: 30px;
+    background-color: #0000000d;
+    color: #0e0e10;
+    padding: 0 1rem;
+  }
+
+  button:hover {
+    background-color: #0000001a;
   }
 
   h2 {
