@@ -1,12 +1,15 @@
 <script>
   import { auth, storage } from "$lib/auth";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import Modal from "$lib/Modal.svelte";
-  import { mutation } from "@urql/svelte";
+  import { mutation, operationStore, query } from "@urql/svelte";
 
-  export let data;
+  export let task = "";
   export let index;
   export let parcel;
+  let loading = false;
+  let resolved = false;
+  console.log(task.id);
   let canvas;
   let player;
   let stream;
@@ -28,21 +31,54 @@
     `,
   });
 
+  const photos = operationStore(
+    `
+    query GeotaggedPhoto($id: uuid!) {
+      geotagged_photo(where: {request_task_id: {_eq: $id}}) {
+        id
+        created
+        uri
+        token
+      }
+    }
+    `,
+    { id: task.id },
+    { requestPolicy: "cache-and-network" }
+  );
+
+  query(photos);
+
+  $: if ($photos.data && $photos.data.geotagged_photo.length === 1) {
+    resolved = true;
+    imageSrc =
+      $photos.data.geotagged_photo[0].uri +
+      "?token=" +
+      $photos.data.geotagged_photo[0].token;
+  }
   onMount(async () => {
-    supported = "mediaDevices" in navigator;
+    // supported = "mediaDevices" in navigator;
+  });
+
+  onDestroy(() => {
+    stopMediaStream();
   });
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   async function openModal(open) {
-    open()
-    const constraints = { audio: false, video: { facingMode: "environment" } }
+    open();
+    if (supported) {
+      const constraints = {
+        audio: false,
+        video: { facingMode: "environment" },
+      };
 
-    try {
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
-      player.srcObject = stream;
-      /* use the stream */
-    } catch (err) {
-      console.log(error);
-      /* handle the error */
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        player.srcObject = stream;
+        /* use the stream */
+      } catch (err) {
+        console.log(error);
+        /* handle the error */
+      }
     }
   }
 
@@ -53,62 +89,86 @@
   }
 
   function readExif() {
-    EXIF.getData(file, function () {
-      var allMetaData = EXIF.getAllTags(this);
-      console.log(allMetaData);
-      exif = allMetaData;
-      // var allMetaDataSpan = document.getElementById("allMetaDataSpan");
-      // allMetaDataSpan.innerHTML = JSON.stringify(allMetaData, null, "\t");
+    EXIF.gettask(file, function () {
+      var allMetatask = EXIF.getAllTags(this);
+      console.log(allMetatask);
+      exif = allMetatask;
+      // var allMetataskSpan = document.getElementById("allMetataskSpan");
+      // allMetataskSpan.innerHTML = JSON.stringify(allMetatask, null, "\t");
     });
   }
 
   async function submit(close) {
+    close();
+    loading = true;
     if (file) {
       try {
         const e = await storage.put("/user/" + user + "/" + file.name, file);
+        console.log(e);
         const m = await mutatePhoto({
           location: "bla",
           user_id: user,
-          request_task_id: data.id,
+          request_task_id: task.id,
           parcel_id: parcel,
           token: e.Metadata.token,
           uri: "https://cappb.terranea.de/storage/o/" + e.key,
           comment: comment,
         });
         if (m.data) {
+          loading = false;
+          resolved = true;
           console.log("UPLOAD SUCCESSFUL");
         }
         if (m.error) {
           console.log(m.error);
+          loading = false;
+          resolved = false;
         }
       } catch (error) {
         console.log(error);
+        loading = false;
+        resolved = false;
       }
     }
+  }
+
+  function closeModal(close) {
+    stopMediaStream();
     close();
+  }
+
+  function stopMediaStream() {
+    if (stream) {
+      stream.getTracks().forEach(function (track) {
+        track.stop();
+      });
+    }
   }
 </script>
 
 <div class="task">
   <h2>{index}. Photo Request</h2>
-  <p>{data.description}</p>
+  <p>{task.description}</p>
   <!-- <button on:click={readExif}>Exif</button> -->
   <Modal>
     <div slot="trigger" let:open>
-      <button class="open" on:click={openModal(open)}
-        ><svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="feather feather-check"
-          ><polyline points="20 6 9 17 4 12" /></svg
-        > Resolve</button
+      <button class="open" on:click={openModal(open)} disabled={loading}>
+        {#if $photos.fetching || loading}
+        <div class="lds-dual-ring"></div>
+        {:else if resolved}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="green"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg
+          >
+        {/if}
+        {resolved ? "Resolved" : "Resolve"}</button
       >
     </div>
     <div slot="header">
@@ -122,7 +182,11 @@
         bind:this={fileInput}
         id="fileinput"
       />
-      <button class="take" on:click={() => fileInput.click()}>
+      <button
+        class="take"
+        on:click={() => fileInput.click()}
+        disabled={resolved}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -133,7 +197,7 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="feather feather-camera"
+          class=""
           ><path
             d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
           /><circle cx="12" cy="13" r="4" /></svg
@@ -142,11 +206,15 @@
 
       <div class="preview">
         {#if supported}
-        <video id="player" bind:this={player} autoplay webkit-playsinline playsinline controls=""/>
-        {:else}
-        {#if imageSrc}
+          <video
+            bind:this={player}
+            autoplay
+            webkit-playsinline
+            playsinline
+            controls=""
+          />
+        {:else if imageSrc}
           <img id="blah" src={imageSrc} alt="your image" />
-        {/if}
         {/if}
       </div>
 
@@ -155,8 +223,10 @@
 
     <div slot="footer" let:store={{ close }}>
       <div class="fbtn">
-        <button on:click={close}>Close</button>
-        <button class="sub" on:click={submit(close)}>Submit</button>
+        <button on:click={closeModal(close)}>Close</button>
+        <button class="sub" on:click={submit(close)} disabled={resolved}
+          >Submit</button
+        >
       </div>
     </div>
   </Modal>
@@ -211,6 +281,11 @@
     object-fit: cover;
   }
 
+  svg.resolved {
+    stroke: green;
+    display: block;
+  }
+
   button {
     margin: 0;
     display: flex;
@@ -226,6 +301,7 @@
     background-color: #0000000d;
     color: #0e0e10;
     padding: 0 0.6rem;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px
   }
 
   button:hover {
@@ -261,5 +337,30 @@
 
   #fileinput {
     display: none;
+  }
+
+  .lds-dual-ring {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: .5rem;
+  }
+  .lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    border-color: var(--primary-color) transparent var(--primary-color) transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+  }
+  @keyframes lds-dual-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 </style>

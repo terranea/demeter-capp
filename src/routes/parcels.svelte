@@ -26,26 +26,30 @@
   );
 
   query(parcels);
-  
+
   let colors = [
-    '#ffffcc',
-    '#a1dab4',
-    '#41b6c4',
-    '#2c7fb8',
-    '#253494',
-    '#fed976',
-    '#feb24c',
-    '#fd8d3c',
-    '#f03b20',
-    '#bd0026'
-    ];
+    "#ffffcc",
+    "#a1dab4",
+    "#41b6c4",
+    "#2c7fb8",
+    "#253494",
+    "#fed976",
+    "#feb24c",
+    "#fd8d3c",
+    "#f03b20",
+    "#bd0026",
+  ];
 
   $: fc = $parcels.fetching
     ? { type: "FeatureCollection", features: [] }
     : {
         type: "FeatureCollection",
         features: $parcels.data.parcels.map((p, i) => {
-          return { type: "Feature", properties: {"color": colors[i>9?0:i]}, geometry: p.geom };
+          return {
+            type: "Feature",
+            properties: { color: colors[i > 9 ? 0 : i] },
+            geometry: p.geom,
+          };
         }),
       };
 
@@ -56,7 +60,8 @@
   onMount(async () => {
     map = new maplibregl.Map({
       container: "map", // container id
-      style: "https://api.maptiler.com/maps/hybrid/style.json?key=Ln1qLDqR5RvwLteNdPJ0", // style URL
+      style:
+        "https://api.maptiler.com/maps/hybrid/style.json?key=Ln1qLDqR5RvwLteNdPJ0", // style URL
       center: [13, 48], // starting position [lng, lat]
       zoom: 8, // starting zoom
       dragRotate: false,
@@ -72,13 +77,15 @@
         source: "parcels",
         layout: {},
         paint: {
-          "line-color": ['get', 'color'],
+          "line-color": ["get", "color"],
           "line-width": 2,
         },
       });
-      map.fitBounds(bbox(fc), {
-        padding: { top: 10, bottom: 25, left: 15, right: 5 },
-      });
+      if (fc.features.length > 0) {
+        map.fitBounds(bbox(fc), {
+          padding: { top: 10, bottom: 25, left: 15, right: 5 },
+        });
+      }
     });
   });
 
@@ -90,8 +97,8 @@
 
   function date(d) {
     var myDate = new Date(d);
-    const format = { year: 'numeric', month: 'short', day: 'numeric' }
-    return myDate.toLocaleDateString('en-EN', format)
+    const format = { year: "numeric", month: "short", day: "numeric" };
+    return myDate.toLocaleDateString("en-EN", format);
   }
 </script>
 

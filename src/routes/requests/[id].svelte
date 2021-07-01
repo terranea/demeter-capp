@@ -9,7 +9,7 @@
 </script>
 
 <script>
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { operationStore, query } from "@urql/svelte";
   import Task from "$lib/Tasks/task.svelte";
   import maplibregl from "maplibre-gl";
@@ -262,7 +262,7 @@
   {#if !$request.fetching}
     <h1>Tasks:</h1>
     {#each $request.data.requests_by_pk.photo_request_tasks as t, i}
-      <Task data={t} index={i + 1} parcel={$request.data.requests_by_pk.parcel_id} />
+      <Task task={t} index={i + 1} parcel={$request.data.requests_by_pk.parcel_id} />
     {/each}
   {/if}
 </section>

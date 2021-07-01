@@ -15,7 +15,7 @@
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        class="feather feather-home"
+        class=""
         ><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline
           points="9 22 9 12 15 12 15 22"
         /></svg
@@ -38,7 +38,7 @@
   nav {
     display: flex;
     justify-content: space-between;
-    height: 60px;
+    min-height: 60px;
     background: #fff;
   }
 
@@ -57,7 +57,8 @@
     justify-content: center;
     flex-direction: column;
     flex: 1 1 0;
-    padding: 5px 0;
+    padding-top: 10px;
+    padding-bottom: 15px;
     font-size: .7rem;
     color: grey;
     text-decoration: none;
