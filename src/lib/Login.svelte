@@ -34,11 +34,14 @@
   <label for="password">Password</label>
   <input name="password" type="password" bind:value={password} />
 
-  <button on:click|preventDefault={login}> Log in </button>
+  <div class="btns">
+    <button on:click|preventDefault={login}> Log in </button>
+    <div>or</div>
+    <button on:click|preventDefault={register}> Sign Up </button>
+  </div>
 
-  <p>or</p>
 
-  <button on:click|preventDefault={register}> Sign Up </button>
+
 </form>
 
 {#if Object.keys(errors).length > 0}
@@ -51,23 +54,23 @@
 
 <style>
   form {
-    padding: 50px;
+    padding: 10px;
     width: 100%;
-    height: 400px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
+    max-width: 500px;
   }
   label {
-    margin: 10px 0;
+    margin: 5px 0;
     align-self: flex-start;
     font-weight: 500;
   }
   input {
     background-color: #fff;
     border: none;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     transition: all 300ms ease-in-out;
     width: 100%;
     padding: 10px 10px;
@@ -82,11 +85,10 @@
     border-bottom: 1px solid var(--primary-color);
   }
   button {
-    margin-top: 20px;
     background: var(--primary-color);
     color: white;
-    padding: 10px 0;
-    width: 200px;
+    padding: 10px 20px;
+    min-width: 120px;
     border: 0;
     border-radius: 5px;
     text-transform: uppercase;
@@ -97,8 +99,16 @@
     box-shadow: 0px 1px 10px 0px rgba(201, 201, 201, 0.58);
   }
   h1 {
-    margin: 10px 20px 30px 20px;
-    font-size: 40px;
+    margin: 0 20px 10px 20px;
+    font-size: 30px;
+  }
+
+  .btns {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 2rem;
   }
   .errors {
     list-style-type: none;

@@ -178,6 +178,7 @@
       <input
         type="file"
         accept="image/*"
+        capture
         on:change={loadPic}
         bind:this={fileInput}
         id="fileinput"
@@ -246,7 +247,7 @@
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
-    padding: 1rem;
+    padding: .6rem 1rem;
     border-radius: 8px;
     position: relative;
   }
@@ -314,8 +315,8 @@
 
   button.open {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: .5rem;
+    right: .5rem;
   }
 
   button.take {

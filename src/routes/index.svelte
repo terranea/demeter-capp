@@ -20,7 +20,6 @@
     );
 
   query(requests);
-  $: console.log($requests)
 </script>
 
 <svelte:head>

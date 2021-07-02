@@ -1,11 +1,11 @@
 <script>
-  import Header from "$lib/Header/index.svelte";
-  import Nav from "$lib/Nav/index.svelte";
+  import Header from "$lib/Header.svelte";
+  import Nav from "$lib/Nav.svelte";
   import "../app.css";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth";
   import { goto } from "$app/navigation";
-  import Login from "$lib/login.svelte";
+  import Login from "$lib/Login.svelte";
   import { client } from "$lib/urql";
   import { setClient } from "@urql/svelte";
 
@@ -58,6 +58,7 @@
     margin: 0 auto;
     box-sizing: border-box;
     overflow-y: auto;
+    align-items: center;
   }
 
   footer {

@@ -3,6 +3,7 @@
 
 <script>
   import { operationStore, query } from "@urql/svelte";
+  import { header } from '$lib/stores';
   import { onMount } from "svelte";
   import maplibregl from "maplibre-gl";
   import bbox from "@turf/bbox";
@@ -58,6 +59,8 @@
   }
 
   onMount(async () => {
+    header.set({"title": "Your Parcels"})
+
     map = new maplibregl.Map({
       container: "map", // container id
       style:
@@ -110,8 +113,6 @@
   />
 </svelte:head>
 
-<h1>Your Parcels</h1>
-
 <div id="map" />
 <section>
   <div class="parcels">
@@ -141,6 +142,7 @@
   section {
     flex: 1;
     overflow-y: auto;
+    width: 100%;
   }
 
   .parcel {

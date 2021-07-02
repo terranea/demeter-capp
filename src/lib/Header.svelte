@@ -1,7 +1,10 @@
 <script>
   import {auth} from "$lib/auth"
+  import { goto } from "$app/navigation";
+	import { header } from '$lib/stores';
 
   function logout() {
+    goto("/")
     auth.logout()
   }
 </script>
@@ -11,7 +14,7 @@
     <img src="/DemeterLogo.png" alt="" />
   </div>
   <div class="welcome">
-    <h2>Welcome</h2>
+    <h2>{$header.title}</h2>
   </div>
   <div class="settings">
     <!-- <svg

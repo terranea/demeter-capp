@@ -11,6 +11,7 @@
 <script>
   import { onMount, onDestroy } from "svelte";
   import { operationStore, query } from "@urql/svelte";
+  import { header } from "$lib/stores";
   import Task from "$lib/Tasks/task.svelte";
   import maplibregl from "maplibre-gl";
   import bbox from "@turf/bbox";
@@ -111,6 +112,8 @@
 
   $: console.log(parcel);
   onMount(async () => {
+    header.set({ title: "Request" });
+
     map = new maplibregl.Map({
       container: "map", // container id
       style:
@@ -176,7 +179,9 @@
     };
   });
 
-  $: console.log($request);
+  onDestroy(async () => {
+    if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
+  });
 
   function setParcel() {
     if (map && map.getSource("parcel")) {
@@ -245,25 +250,20 @@
   />
 </svelte:head>
 
-<div class="header">
-  {#if $request.fetching}
-    <p>loading</p>
-  {:else if $request.error}
-    <p>Oh no... {$request.error.message}</p>
-  {:else}
-    <h1>{$request.data.requests_by_pk.title}</h1>
-    <h2>for {$request.data.requests_by_pk.parcel.name}</h2>
-  {/if}
-</div>
-
 <div id="map" />
 
 <section>
   {#if !$request.fetching}
-    <h1>Tasks:</h1>
-    {#each $request.data.requests_by_pk.photo_request_tasks as t, i}
-      <Task task={t} index={i + 1} parcel={$request.data.requests_by_pk.parcel_id} />
-    {/each}
+    <h2>Tasks for {$request.data.requests_by_pk.parcel.name}</h2>
+    <div class="tasks">
+      {#each $request.data.requests_by_pk.photo_request_tasks as t, i}
+        <Task
+          task={t}
+          index={i + 1}
+          parcel={$request.data.requests_by_pk.parcel_id}
+        />
+      {/each}
+    </div>
   {/if}
 </section>
 
@@ -276,11 +276,20 @@
   }
 
   section {
-    margin-top: 1.4rem;
+    margin-top: .8rem;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: hidden;
+  }
+
+  .tasks {
+    overflow-y: auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    overflow-y: auto;
   }
 
   section h1 {
@@ -299,5 +308,6 @@
 
   h2 {
     margin: 0;
+    margin-bottom: .4rem;
   }
 </style>
