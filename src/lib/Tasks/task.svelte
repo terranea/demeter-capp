@@ -250,6 +250,7 @@
     padding: .6rem 1rem;
     border-radius: 8px;
     position: relative;
+    width: 100%;
   }
 
   .content {
