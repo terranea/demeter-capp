@@ -1,6 +1,3 @@
-<script context="module">
-</script>
-
 <script>
   import Item from "$lib/FeedItem.svelte";
 

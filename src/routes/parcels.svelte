@@ -1,6 +1,3 @@
-<script context="module">
-</script>
-
 <script>
   import { operationStore, query } from "@urql/svelte";
   import { header } from '$lib/stores';
