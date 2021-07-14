@@ -18,8 +18,8 @@
     );
 
 
-  onMount(async () => {
     query(requests);
+    onMount(async () => {
     // supported = "mediaDevices" in navigator;
   });
 </script>

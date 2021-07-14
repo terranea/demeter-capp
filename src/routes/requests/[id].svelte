@@ -109,10 +109,9 @@
     map.getSource("userlocation").setData(userLocation);
   }
 
-  $: console.log(parcel);
+  query(request);
   onMount(async () => {
     header.set({ title: "Request" });
-    query(request);
     map = new maplibregl.Map({
       container: "map", // container id
       style:

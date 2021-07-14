@@ -53,8 +53,8 @@
       "?token=" +
       $photos.data.geotagged_photo[0].token;
   }
+  query(photos);
   onMount(async () => {
-    query(photos);
     // supported = "mediaDevices" in navigator;
   });
 
