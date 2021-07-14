@@ -7,6 +7,7 @@
     "preview": "svelte-kit preview"
   },
   "devDependencies": {
+    "@sveltejs/adapter-netlify": "^1.0.0-next.21",
     "@sveltejs/adapter-vercel": "^1.0.0-next.22",
     "@sveltejs/kit": "next",
     "@turf/bbox": "^6.4.0",
