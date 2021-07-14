@@ -45,7 +45,7 @@
 <Nav />
 
 <!-- <footer>
-	<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+	<a href="/about">About</a>
 </footer> -->
 <style>
   main {
