@@ -2,7 +2,7 @@
 </script>
 
 <script>
-  import Item from "$lib/Feed/Item.svelte";
+  import Item from "$lib/FeedItem.svelte";
 
   import { operationStore, query } from "@urql/svelte";
   const requests = operationStore(`

@@ -12,7 +12,7 @@
   import { onMount, onDestroy } from "svelte";
   import { operationStore, query } from "@urql/svelte";
   import { header } from "$lib/stores";
-  import Task from "$lib/Tasks/task.svelte";
+  import Task from "$lib/Task.svelte";
   import maplibregl from "maplibre-gl";
   import bbox from "@turf/bbox";
   export let id;
