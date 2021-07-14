@@ -1,6 +1,6 @@
 # Demeter CAPP
 
-This is the source code for the Demeter CAPP PWA. A running prototype lives at [terranea-demeter-capp.netlify.app](https://terranea-demeter-capp.netlify.app).
+This is the source code for the Demeter CAPP PWA.
 
 The Common Agricultural Policy App (CAPP) includes parcel boundaries from farmers and a request feed with tasks a farmer has to fulfill. The app allows the farmer to respond to a request and its tasks and e.g. take a geotagged photo. This photo can then be retrieved from a paying agency after the task is completed. Since the photo's geo-coordinates are derived from the smartphone and transferred directly to the data storage, the farmer has minimal option to manipulate them. Each parcel can be selected by the farmer and all of its attributes are visualised. When a parcel is selected the farmer can see photos including their geo-coordinates.
 

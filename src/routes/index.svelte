@@ -1,5 +1,6 @@
 <script>
   import Item from "$lib/FeedItem.svelte";
+  import { onMount, onDestroy } from "svelte";
 
   import { operationStore, query } from "@urql/svelte";
   const requests = operationStore(`
@@ -16,7 +17,11 @@
     { requestPolicy: 'cache-and-network' }
     );
 
-  query(requests);
+
+  onMount(async () => {
+    query(requests);
+    // supported = "mediaDevices" in navigator;
+  });
 </script>
 
 <svelte:head>

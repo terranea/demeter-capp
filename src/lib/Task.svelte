@@ -9,8 +9,6 @@
   export let parcel;
   let loading = false;
   let resolved = false;
-  console.log(task.id);
-  let canvas;
   let player;
   let stream;
   let fileInput;
@@ -46,7 +44,7 @@
     { requestPolicy: "cache-and-network" }
   );
 
-  query(photos);
+ 
 
   $: if ($photos.data && $photos.data.geotagged_photo.length === 1) {
     resolved = true;
@@ -56,6 +54,7 @@
       $photos.data.geotagged_photo[0].token;
   }
   onMount(async () => {
+    query(photos);
     // supported = "mediaDevices" in navigator;
   });
 
