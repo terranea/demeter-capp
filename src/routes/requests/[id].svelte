@@ -56,7 +56,7 @@
     { id },
     { requestPolicy: "cache-and-network" }
   );
-  query(request);
+  
 
   $: parcel = !$request.fetching
     ? $request.data.requests_by_pk.parcel.geom
@@ -98,13 +98,12 @@
     map.getSource("tasklocations").setData(fc);
   }
 
-  // $: if (!$request.fetching && map) {
-  //   let ctr = $request.data.requests_by_pk.parcel.geom;
-  //   map.fitBounds(bbox(ctr), {
-  //     padding: { top: 40, bottom: 40, left: 20, right: 20 },
-  //   });
-  //   // map.jumpTo({ center: ctr, zoom: 14});
-  // }
+  $: if (!$request.fetching && map) {
+    let ctr = $request.data.requests_by_pk.parcel.geom;
+    map.fitBounds(bbox(ctr), {
+      padding: { top: 40, bottom: 40, left: 20, right: 20 },
+    });
+  }
 
   $: if (!$request.fetching && map && map.getSource("userlocation")) {
     map.getSource("userlocation").setData(userLocation);
@@ -113,7 +112,7 @@
   $: console.log(parcel);
   onMount(async () => {
     header.set({ title: "Request" });
-
+    query(request);
     map = new maplibregl.Map({
       container: "map", // container id
       style:
