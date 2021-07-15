@@ -1,5 +1,6 @@
 <script>
   import { goto } from "$app/navigation";
+  import { auth } from "$lib/auth";
 	import { header } from '$lib/stores';
 
   export let loggedIn = false;
