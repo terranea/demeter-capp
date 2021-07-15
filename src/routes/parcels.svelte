@@ -6,6 +6,7 @@
   import bbox from "@turf/bbox";
 
   let map;
+  let selParcel;
 
   const parcels = operationStore(
     `
@@ -17,6 +18,9 @@
 				created
 				area
 				geom
+        crop_type
+        lpis_id
+        parcel_id
   		}
 		}`,
     {},
@@ -89,7 +93,8 @@
     });
   });
 
-  function jump(g) {
+  function jump(g, id) {
+    selParcel = id
     map.fitBounds(bbox(g), {
       padding: { top: 10, bottom: 25, left: 15, right: 5 },
     });
@@ -119,9 +124,14 @@
       <p>Oh no... {$parcels.error.message}</p>
     {:else}
       {#each $parcels.data.parcels as p}
-        <div class="parcel" on:click={jump(p.geom)}>
+        <div class="parcel" on:click={jump(p.geom, p.id)} class:selected={selParcel === p.id}>
           <h2>{p.name}</h2>
-          <p>created: {date(p.created)}</p>
+          <p></p>
+          <p><strong>ID:</strong> {p.parcel_id}</p>
+          <p><strong>Created:</strong> {date(p.created)}</p>
+          <p><strong>Crop Type:</strong> {p.crop_type}</p>
+          <p><strong>Area:</strong> {p.area}m²</p>
+          <p style="grid-column: span 2; display: inline;"><strong>LPIS:</strong> {p.lpis_id}</p>
         </div>
       {/each}
     {/if}
@@ -143,18 +153,38 @@
   }
 
   .parcel {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 35px 20px 20px 20px;
+    column-gap: 1rem;
+    align-items: center;
     padding: 0.5rem 1rem;
     background-color: #fff;
     border-radius: 5px;
     cursor: pointer;
   }
 
+  h2 {
+    color: #4ac2c1;
+    font-size: 1.2rem;
+    margin: 0;
+  }
+
+  .parcel p {
+    display: flex;
+    justify-content: space-between;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
   .parcels {
     display: grid;
     grid-template-columns: 1fr;
     row-gap: .7rem;
+  }
+
+  .selected {
+    background-color: var(--secondary-color);
   }
 
   @media (min-width: 560px) {

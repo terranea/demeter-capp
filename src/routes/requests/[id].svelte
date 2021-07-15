@@ -101,7 +101,11 @@
     let ctr = $request.data.requests_by_pk.parcel.geom;
     map.fitBounds(bbox(ctr), {
       padding: { top: 40, bottom: 40, left: 20, right: 20 },
+      linear: true
     });
+    if (!map.isMoving()) {
+      map.setMaxBounds(map.getBounds())
+    }
   }
 
   query(request);
