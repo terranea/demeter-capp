@@ -56,7 +56,6 @@
     { id },
     { requestPolicy: "cache-and-network" }
   );
-  
 
   $: parcel = !$request.fetching
     ? $request.data.requests_by_pk.parcel.geom
@@ -120,6 +119,14 @@
       zoom: 1, // starting zoom
       dragRotate: false,
     });
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+      })
+    );
     map.on("load", function () {
       map.addSource("parcel", {
         type: "geojson",
@@ -271,7 +278,7 @@
   }
 
   section {
-    margin-top: .8rem;
+    margin-top: 0.8rem;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -305,6 +312,6 @@
 
   h2 {
     margin: 0;
-    margin-bottom: .4rem;
+    margin-bottom: 0.4rem;
   }
 </style>
