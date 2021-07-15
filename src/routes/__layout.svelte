@@ -2,17 +2,16 @@
   import Header from "$lib/Header.svelte";
   import Nav from "$lib/Nav.svelte";
   import "../app.css";
-  import { onMount } from "svelte";
+  import { onMount, setContext } from "svelte";
   import { auth } from "$lib/auth";
   import { goto } from "$app/navigation";
   import Login from "$lib/Login.svelte";
   import { client } from "$lib/urql";
-  import { setClient } from "@urql/svelte";
 
   let isLoading = true;
   let isAuthenticated = false;
   
-  setClient(client)
+  setContext("$$_urql", client)
   onMount(async () => {
     const isa = await auth.isAuthenticatedAsync();
     isLoading = false;
