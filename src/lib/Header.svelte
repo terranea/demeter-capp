@@ -1,7 +1,8 @@
 <script>
-  import {auth} from "$lib/auth"
   import { goto } from "$app/navigation";
 	import { header } from '$lib/stores';
+
+  export let loggedIn = false;
 
   function logout() {
     goto("/")
@@ -35,7 +36,9 @@
         y2="6"
       /><line x1="3" y1="18" x2="21" y2="18" /></svg
     > -->
-    <button on:click="{logout}">👋</button>
+    {#if loggedIn}
+    <button on:click="{logout}">Logout</button>
+    {/if}
   </div>
 </header>
 
@@ -61,7 +64,7 @@
     outline: 0;
     border: none;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 300;
     border-radius: 4px;
     font-size: 13px;
     min-height: 30px;

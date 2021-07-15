@@ -1,18 +1,15 @@
 <script>
-  export let kind = "photo";
-  export let description =
-    "We request further information for the land parcel #1010. Please tap to get further instructions.";
   export let reason = "";
   export let parcel = "";
   export let id;
-
-  $: title = kind == "photo" ? "Image Request" : "Request";
+  export let status;
+  export let title
 </script>
 
 <a href={`/requests/${id}`}>
 <div class="item">
     <h2>{title}</h2>
-    <p>{description}</p>
+    <p>{reason}</p>
     <div class="parcel">Parcel: {parcel}</div>
   </div>
 </a>

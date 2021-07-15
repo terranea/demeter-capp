@@ -1,6 +1,7 @@
 <script>
   import Item from "$lib/FeedItem.svelte";
   import { onMount, onDestroy } from "svelte";
+  import { header } from "$lib/stores";
 
   import { operationStore, query } from "@urql/svelte";
   const requests = operationStore(`
@@ -10,16 +11,21 @@
 				reason
 				status
 				title
-				parcel_id
+        parcel {
+          id
+          parcel_id
+        }
 			}
 		}`,
     {},
     { requestPolicy: 'cache-and-network' }
     );
 
+    $: console.log($requests)
 
     query(requests);
     onMount(async () => {
+      header.set({ title: "Request Feed" });
     // supported = "mediaDevices" in navigator;
   });
 </script>
@@ -29,7 +35,7 @@
 </svelte:head>
 
 <section>
-  <h1>Recent Activity</h1>
+  <h1>Recent Requests</h1>
 
   <div class="feed">
     {#if $requests.fetching}
@@ -40,9 +46,10 @@
       {#each $requests.data.requests as r}
         <Item
           id={r.id}
-          kind={r.kind}
-          description={r.reason}
-          parcel={r.parcel_id}
+          title={r.title}
+          reason={r.reason}
+          parcel={r.parcel.parcel_id}
+          status={r.status}
         />
       {/each}
     {/if}
@@ -54,6 +61,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
     flex: 1;
   }
 

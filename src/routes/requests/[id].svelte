@@ -39,6 +39,7 @@
         title
         parcel {
           id
+          parcel_id
           name
           geom
         }
@@ -92,7 +93,6 @@
       type: "FeatureCollection",
       features: features,
     };
-    console.log(fc);
 
     map.getSource("tasklocations").setData(fc);
   }
@@ -104,13 +104,9 @@
     });
   }
 
-  $: if (!$request.fetching && map && map.getSource("userlocation")) {
-    map.getSource("userlocation").setData(userLocation);
-  }
-
   query(request);
   onMount(async () => {
-    header.set({ title: "Request" });
+    header.set({ title: "Request Tasks" });
     map = new maplibregl.Map({
       container: "map", // container id
       style:
@@ -119,23 +115,19 @@
       zoom: 1, // starting zoom
       dragRotate: false,
     });
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      })
-    );
+    var geolocate = new maplibregl.GeolocateControl({
+      positionOptions: {
+      enableHighAccuracy: true
+      },
+      trackUserLocation: true
+      });
+      // Add the control to the map.
+    map.addControl(geolocate);
     map.on("load", function () {
+      // geolocate.trigger();
       map.addSource("parcel", {
         type: "geojson",
         data: parcel,
-      });
-
-      map.addSource("userlocation", {
-        type: "geojson",
-        data: userLocation,
       });
 
       map.addSource("tasklocations", {
@@ -154,16 +146,6 @@
         paint: {
           "line-color": "#fed976",
           "line-width": 3,
-        },
-      });
-
-      map.addLayer({
-        id: "userlocation",
-        source: "userlocation",
-        type: "circle",
-        paint: {
-          "circle-radius": 5,
-          "circle-color": "#007cbf",
         },
       });
 
@@ -289,11 +271,11 @@
 
   .tasks {
     overflow-y: auto;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr;
     width: 100%;
+    row-gap: .7rem;
+    column-gap: 1rem;
   }
 
   section h1 {
@@ -313,5 +295,17 @@
   h2 {
     margin: 0;
     margin-bottom: 0.4rem;
+  }
+
+  @media (min-width: 560px) {
+    #map {
+      height: 50%;
+      min-height: 200px;
+      width: 100%;
+    }
+
+  .tasks {
+    grid-template-columns: 1fr 1fr;
+  }
   }
 </style>

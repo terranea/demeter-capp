@@ -148,7 +148,25 @@
     padding: 0.5rem 1rem;
     background-color: #fff;
     border-radius: 5px;
-    margin-bottom: 0.7rem;
     cursor: pointer;
+  }
+
+  .parcels {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: .7rem;
+  }
+
+  @media (min-width: 560px) {
+    #map {
+      height: 50%;
+      min-height: 200px;
+      width: 100%;
+    }
+
+  .parcels {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1rem;
+  }
   }
 </style>

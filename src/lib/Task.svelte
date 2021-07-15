@@ -242,7 +242,6 @@
 
 <style>
   .task {
-    margin-bottom: 0.7rem;
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
@@ -250,6 +249,7 @@
     border-radius: 8px;
     position: relative;
     width: 100%;
+    min-height: 100px;
   }
 
   .content {

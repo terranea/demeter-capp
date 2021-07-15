@@ -29,7 +29,7 @@
   });
 </script>
 
-<Header />
+<Header loggedIn={isAuthenticated} />
 
 <main>
   {#if isLoading}
