@@ -6,11 +6,12 @@
   import { operationStore, query } from "@urql/svelte";
   const requests = operationStore(`
 		query {
-			requests {
+			requests(order_by: {created: asc}) {
 				id
 				reason
 				status
 				title
+        expires
         parcel {
           id
           parcel_id
@@ -50,6 +51,7 @@
           reason={r.reason}
           parcel={r.parcel.parcel_id}
           status={r.status}
+          expires={r.expires}
         />
       {/each}
     {/if}
