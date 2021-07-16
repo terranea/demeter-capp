@@ -166,7 +166,6 @@
 
   h2 {
     color: #4ac2c1;
-    font-size: 1.2rem;
     margin: 0;
   }
 
