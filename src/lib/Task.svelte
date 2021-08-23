@@ -83,17 +83,21 @@
   async function loadPic(e) {
     console.log(e.target.files);
     file = e.target.files[0];
-    imageSrc = URL.createObjectURL(file);
+    imageSrc = await URL.createObjectURL(file);
+    var fileReader = new FileReader();
+    // readExif(fileReader.readAsBinaryString(file))
   }
 
-  function readExif() {
-    EXIF.gettask(file, function () {
-      var allMetatask = EXIF.getAllTags(this);
-      console.log(allMetatask);
-      exif = allMetatask;
-      // var allMetataskSpan = document.getElementById("allMetataskSpan");
-      // allMetataskSpan.innerHTML = JSON.stringify(allMetatask, null, "\t");
-    });
+  function readExif(binaryFileObject) {
+    EXIF.readFromBinaryFile(binaryFileObject);
+    // EXIF.getData(file.readAsBinaryString, function () {
+    //   var allMetaData = EXIF.getAllTags(this);
+    //   console.log(allMetaData);
+    //   exif = allMetaData;
+      
+    //   // var allMetataskSpan = document.getElementById("allMetataskSpan");
+    //   // allMetataskSpan.innerHTML = JSON.stringify(allMetatask, null, "\t");
+    // });
   }
 
   async function submit(close) {
@@ -147,7 +151,7 @@
 <div class="task">
   <h2>{index}. Photo Request</h2>
   <p>{task.description}</p>
-  <!-- <button on:click={readExif}>Exif</button> -->
+  
   <Modal>
     <div slot="trigger" let:open>
       <button class="open" on:click={openModal(open)} disabled={loading}>
@@ -206,8 +210,6 @@
         > Take Picture
       </button>
      {/if}
-
-     {userLocation.coordinates}
 
       <div class="preview">
         {#if supported}

@@ -69,11 +69,8 @@
       };
 
   $: if (!$request.fetching) {
-    console.log("BASLDFAJD");
     if (map && map.getSource("tasklocations")) {
       const data = taskLocs();
-
-      console.log(data);
       map.getSource("tasklocations").setData(data);
     }
   }
@@ -173,7 +170,6 @@
 
   function setParcel() {
     if (map && map.getSource("parcel")) {
-      console.log("SET DATA");
       map.getSource("parcel").setData($request.data.requests_by_pk.parcel.geom);
       let ctr = $request.data.requests_by_pk.parcel.geom.coordinates[0][0];
       map.jumpTo({ center: ctr, zoom: 11 });
@@ -185,7 +181,6 @@
     if (navigator.geolocation) {
       const onSuccess = (position) => {
         locationError = null;
-        console.log(position);
         coordinates = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
