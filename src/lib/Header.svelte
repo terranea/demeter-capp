@@ -7,7 +7,9 @@
 
   function logout() {
     goto("/")
-    auth.logout()
+    if (auth.isAuthenticated()) {
+      auth.logout()
+    }
   }
 </script>
 

@@ -7,6 +7,7 @@
   export let task = "";
   export let index;
   export let parcel;
+  export let userLocation;
   let loading = false;
   let resolved = false;
   let player;
@@ -21,7 +22,7 @@
 
   const mutatePhoto = mutation({
     query: `
-    mutation Photo($location: String = "", $uri: String = "", $token: String = "", $user_id: uuid!, $request_task_id: uuid!, $parcel_id: uuid!, $comment: String = "") {
+    mutation Photo($location: geography!, $uri: String = "", $token: String = "", $user_id: uuid!, $request_task_id: uuid!, $parcel_id: uuid!, $comment: String = "") {
       insert_geotagged_photo(objects: {location: $location, uri: $uri, token: $token, user_id: $user_id, request_task_id: $request_task_id, parcel_id: $parcel_id, comment: $comment}) {
         affected_rows
       }
@@ -43,8 +44,6 @@
     { id: task.id },
     { requestPolicy: "cache-and-network" }
   );
-
- 
 
   $: if ($photos.data && $photos.data.geotagged_photo.length === 1) {
     resolved = true;
@@ -105,7 +104,7 @@
         const e = await storage.put("/user/" + user + "/" + file.name, file);
         console.log(e);
         const m = await mutatePhoto({
-          location: "bla",
+          location: userLocation,
           user_id: user,
           request_task_id: task.id,
           parcel_id: parcel,
@@ -153,7 +152,7 @@
     <div slot="trigger" let:open>
       <button class="open" on:click={openModal(open)} disabled={loading}>
         {#if $photos.fetching || loading}
-        <div class="lds-dual-ring"></div>
+          <div class="lds-dual-ring" />
         {:else if resolved}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +170,9 @@
       >
     </div>
     <div slot="header">
+      {#if !resolved}
       <h2>Please move to the coordinates on the map to take a picture</h2>
+      {/if}
     </div>
     <div class="content" slot="content">
       <input
@@ -182,6 +183,7 @@
         bind:this={fileInput}
         id="fileinput"
       />
+      {#if !resolved}
       <button
         class="take"
         on:click={() => fileInput.click()}
@@ -203,6 +205,9 @@
           /><circle cx="12" cy="13" r="4" /></svg
         > Take Picture
       </button>
+     {/if}
+
+     {userLocation.coordinates}
 
       <div class="preview">
         {#if supported}
@@ -245,7 +250,7 @@
     display: flex;
     flex-direction: column;
     background-color: rgb(255, 255, 255);
-    padding: .6rem 1rem;
+    padding: 0.6rem 1rem;
     border-radius: 8px;
     position: relative;
     width: 100%;
@@ -302,7 +307,9 @@
     background-color: #0000000d;
     color: #0e0e10;
     padding: 0 0.6rem;
-    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px,
+      rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px,
+      rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
   }
 
   button:hover {
@@ -315,8 +322,8 @@
 
   button.open {
     position: absolute;
-    top: .5rem;
-    right: .5rem;
+    top: 0.5rem;
+    right: 0.5rem;
   }
 
   button.take {
@@ -344,7 +351,7 @@
     display: inline-block;
     width: 16px;
     height: 16px;
-    margin-right: .5rem;
+    margin-right: 0.5rem;
   }
   .lds-dual-ring:after {
     content: " ";
@@ -353,7 +360,8 @@
     height: 10px;
     border-radius: 50%;
     border: 3px solid var(--primary-color);
-    border-color: var(--primary-color) transparent var(--primary-color) transparent;
+    border-color: var(--primary-color) transparent var(--primary-color)
+      transparent;
     animation: lds-dual-ring 1.2s linear infinite;
   }
   @keyframes lds-dual-ring {

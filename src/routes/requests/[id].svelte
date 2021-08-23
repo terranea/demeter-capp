@@ -249,6 +249,7 @@
           task={t}
           index={i + 1}
           parcel={$request.data.requests_by_pk.parcel_id}
+          userLocation={userLocation}
         />
       {/each}
     </div>
