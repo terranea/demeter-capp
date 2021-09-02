@@ -11,6 +11,7 @@
   export let userLocation;
   let loading = false;
   let resolved = false;
+  let submitActive = false;
   let player;
   let stream;
   let fileInput;
@@ -24,8 +25,8 @@
 
   const mutatePhoto = mutation({
     query: `
-    mutation Photo($location: geography!, $uri: String = "", $token: String = "", $user_id: uuid!, $request_task_id: uuid!, $parcel_id: uuid!, $comment: String = "") {
-      insert_geotagged_photo(objects: {location: $location, uri: $uri, token: $token, user_id: $user_id, request_task_id: $request_task_id, parcel_id: $parcel_id, comment: $comment}) {
+    mutation Photo($location: geography!, $url: String = "", $token: String = "", $user_id: uuid!, $request_task_id: uuid!, $parcel_id: uuid!, $comment: String = "", $exif: json) {
+      insert_geotagged_photo(objects: {location: $location, url: $url, token: $token, user_id: $user_id, request_task_id: $request_task_id, parcel_id: $parcel_id, comment: $comment, exif: $exif}) {
         affected_rows
       }
     }
@@ -38,7 +39,7 @@
       geotagged_photo(where: {request_task_id: {_eq: $id}}) {
         id
         created
-        uri
+        url
         token
       }
     }
@@ -50,7 +51,7 @@
   $: if ($photos.data && $photos.data.geotagged_photo.length === 1) {
     resolved = true;
     imageSrc =
-      $photos.data.geotagged_photo[0].uri +
+      $photos.data.geotagged_photo[0].url +
       "?token=" +
       $photos.data.geotagged_photo[0].token;
   }
@@ -66,17 +67,27 @@
   $: distance = calcDistance()
 
   function calcDistance() {
-    let from = [12.48984647, 48.005247147]
     let distance = 0
-    if (task && task.location.coordinates) {
-      distance = turfdistance(from, task.location.coordinates, {units: 'kilometers'});
+    if (task && task.location.coordinates && userLocation && userLocation.coordinates) {
+      try {
+        distance = turfdistance(userLocation.coordinates, task.location.coordinates, {units: 'kilometers'});
+      } catch (error) {
+        console.log(error)
+      }
     }
     if (distance < 1) {
-      console.log(distance)
       return Math.round(distance * 100) / 100 * 1000 + " m"
     } else {
       return Math.round(distance * 100) / 100 + " km"
     }
+  }
+
+  function readExif(file) {
+   EXIF.getData(file, function() {
+      var allMetaData = EXIF.getAllTags(this)
+      exif = allMetaData
+      submitActive = true
+    });
   }
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   async function openModal(open) {
@@ -99,36 +110,28 @@
   }
 
   async function loadPic(e) {
-    console.log(e.target.files);
+    exif = {}
     file = e.target.files[0];
     imageSrc = URL.createObjectURL(file);
-  }
-
-  function readExif() {
-    var img1 = document.getElementById("capturedImg");
-    console.log("READ")
-    EXIF.getData(img1, function() {
-      console.log("readExif")
-      var allMetaData = EXIF.getAllTags(this);
-      console.log(allMetaData)
-    });
-  }
+    readExif(file)
+   }
 
   async function submit(close) {
     close();
     loading = true;
+    console.log(exif)
     if (file) {
       try {
         const e = await storage.put("/user/" + user + "/" + file.name, file);
-        console.log(e);
         const m = await mutatePhoto({
           location: userLocation,
           user_id: user,
           request_task_id: task.id,
           parcel_id: parcel,
           token: e.Metadata.token,
-          uri: "https://cappb.terranea.de/storage/o/" + e.key,
+          url: "https://cappb.terranea.de/storage/o/" + e.key,
           comment: comment,
+          exif: exif
         });
         if (m.data) {
           loading = false;
@@ -141,7 +144,7 @@
           resolved = false;
         }
       } catch (error) {
-        console.log(error);
+        console.log("Error", error);
         loading = false;
         resolved = false;
       }
@@ -226,7 +229,6 @@
             /><circle cx="12" cy="13" r="4" /></svg
           > Take Picture
         </button>
-        <!-- <button on:click={readExif}>exif</button> -->
       {/if}
 
       <div class="preview">
@@ -238,10 +240,9 @@
             playsinline
             controls=""
           />
-        {:else if imageSrc}
-          <img bind:this={loadedImg} id="capturedImg" src={imageSrc} alt="your image" />
-        {/if}
-      </div>
+          {/if}
+          <img bind:this={loadedImg} id="capturedImg" src={imageSrc || "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="} alt="your image" />
+        </div>
 
       <input type="text" placeholder="comment" bind:value={comment} />
     </div>
@@ -249,21 +250,14 @@
     <div slot="footer" let:store={{ close }}>
       <div class="fbtn">
         <button on:click={closeModal(close)}>Close</button>
-        <button class="sub" on:click={submit(close)} disabled={resolved}
-          >Submit</button
-        >
+        {#if !resolved}
+        <button class="{submitActive ? "sub" : "inactive"}" on:click={submit(close)} disabled={!submitActive}
+          >Submit</button>
+        {/if}
       </div>
     </div>
   </Modal>
 </div>
-
-{#if exif}
-  <ul>
-    {#each Object.entries(exif) as [title, paragraph]}
-      <li>{title}: {paragraph}</li>
-    {/each}
-  </ul>
-{/if}
 
 <style>
   .task {
@@ -305,6 +299,10 @@
     min-height: 0;
     width: 100%;
     object-fit: cover;
+  }
+
+  .inactive {
+    background-color:rgba(0, 0, 0, 0.1);
   }
 
   svg.resolved {
