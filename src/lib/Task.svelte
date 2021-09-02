@@ -3,6 +3,7 @@
   import { onMount, onDestroy } from "svelte";
   import Modal from "$lib/Modal.svelte";
   import { mutation, operationStore, query } from "@urql/svelte";
+  import turfdistance from "@turf/distance";
 
   export let task = "";
   export let index;
@@ -18,6 +19,7 @@
   let exif;
   let comment;
   let imageSrc = "";
+  let loadedImg;
   let user = auth.getClaim("x-hasura-user-id");
 
   const mutatePhoto = mutation({
@@ -60,6 +62,22 @@
   onDestroy(() => {
     stopMediaStream();
   });
+
+  $: distance = calcDistance()
+
+  function calcDistance() {
+    let from = [12.48984647, 48.005247147]
+    let distance = 0
+    if (task && task.location.coordinates) {
+      distance = turfdistance(from, task.location.coordinates, {units: 'kilometers'});
+    }
+    if (distance < 1) {
+      console.log(distance)
+      return Math.round(distance * 100) / 100 * 1000 + " m"
+    } else {
+      return Math.round(distance * 100) / 100 + " km"
+    }
+  }
   // https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia/
   async function openModal(open) {
     open();
@@ -83,21 +101,17 @@
   async function loadPic(e) {
     console.log(e.target.files);
     file = e.target.files[0];
-    imageSrc = await URL.createObjectURL(file);
-    var fileReader = new FileReader();
-    // readExif(fileReader.readAsBinaryString(file))
+    imageSrc = URL.createObjectURL(file);
   }
 
-  function readExif(binaryFileObject) {
-    EXIF.readFromBinaryFile(binaryFileObject);
-    // EXIF.getData(file.readAsBinaryString, function () {
-    //   var allMetaData = EXIF.getAllTags(this);
-    //   console.log(allMetaData);
-    //   exif = allMetaData;
-      
-    //   // var allMetataskSpan = document.getElementById("allMetataskSpan");
-    //   // allMetataskSpan.innerHTML = JSON.stringify(allMetatask, null, "\t");
-    // });
+  function readExif() {
+    var img1 = document.getElementById("capturedImg");
+    console.log("READ")
+    EXIF.getData(img1, function() {
+      console.log("readExif")
+      var allMetaData = EXIF.getAllTags(this);
+      console.log(allMetaData)
+    });
   }
 
   async function submit(close) {
@@ -146,12 +160,14 @@
       });
     }
   }
+
 </script>
 
 <div class="task">
   <h2>{index}. Photo Request</h2>
   <p>{task.description}</p>
-  
+  <p class="distance">You are <strong>{distance}</strong> away from the requested location.</p>
+
   <Modal>
     <div slot="trigger" let:open>
       <button class="open" on:click={openModal(open)} disabled={loading}>
@@ -175,7 +191,7 @@
     </div>
     <div slot="header">
       {#if !resolved}
-      <h2>Please move to the coordinates on the map to take a picture</h2>
+        <h2>Please move to the coordinates on the map to take a picture</h2>
       {/if}
     </div>
     <div class="content" slot="content">
@@ -188,28 +204,29 @@
         id="fileinput"
       />
       {#if !resolved}
-      <button
-        class="take"
-        on:click={() => fileInput.click()}
-        disabled={resolved}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class=""
-          ><path
-            d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-          /><circle cx="12" cy="13" r="4" /></svg
-        > Take Picture
-      </button>
-     {/if}
+        <button
+          class="take"
+          on:click={() => fileInput.click()}
+          disabled={resolved}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class=""
+            ><path
+              d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+            /><circle cx="12" cy="13" r="4" /></svg
+          > Take Picture
+        </button>
+        <!-- <button on:click={readExif}>exif</button> -->
+      {/if}
 
       <div class="preview">
         {#if supported}
@@ -221,7 +238,7 @@
             controls=""
           />
         {:else if imageSrc}
-          <img id="blah" src={imageSrc} alt="your image" />
+          <img bind:this={loadedImg} id="capturedImg" src={imageSrc} alt="your image" />
         {/if}
       </div>
 
@@ -339,6 +356,10 @@
     justify-content: space-between;
     width: 100%;
     margin-top: 1rem;
+  }
+
+  .distance {
+    margin-top: .4rem;
   }
 
   button.sub {
