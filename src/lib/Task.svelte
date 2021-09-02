@@ -192,6 +192,7 @@
     <div slot="header">
       {#if !resolved}
         <h2>Please move to the coordinates on the map to take a picture</h2>
+        <p class="distance">You are <strong>{distance}</strong> away from the requested location.</p>
       {/if}
     </div>
     <div class="content" slot="content">
