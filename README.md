@@ -15,6 +15,8 @@ The accuracy of the geo-coordinates will depend on the smartphone's GPS unit and
 
 ![CAPP Screenshots](/Screenshots.png)
 
+> Here you can find a short video introduction: [https://demeter.terranea.de](https://demeter.terranea.de)
+
 ## Demeter Project
 This application has been developed within the DEMETER project. The H2020 DEMETER project is a large-scale deployment of farmer-driven, interoperable smart farming-IoT (Internet of Things) based platforms, delivered through a series of 20 pilots across 18 countries (15 EU countries). Involving 60 partners, DEMETER adopts a multi-actor approach across the value chain (demand and supply), with 25 deployment sites, 6,000 farmers and over 38,000 devices and sensors being deployed.
 
